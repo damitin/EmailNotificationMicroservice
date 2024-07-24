@@ -1,6 +1,8 @@
 package com.bankname.notification.email.kafka.config;
 
 import com.bankname.banking.model.AccountDTO;
+import com.bankname.notification.email.exception.NonRetryableException;
+import com.bankname.notification.email.exception.RetryableException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -15,6 +17,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,11 +48,18 @@ public class KafkaConfig {
     }
 
     @Bean
-    ConcurrentKafkaListenerContainerFactory<String, AccountDTO> kafkaListenerContainerFactory(
+    ConcurrentKafkaListenerContainerFactory<String, AccountDTO> kafkaListenerContainerFactory
+            (
             ConsumerFactory<String, AccountDTO> consumerFactory,
             KafkaTemplate kafkaTemplate
-    ) {
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new DeadLetterPublishingRecoverer(kafkaTemplate));
+            ) {
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler
+                (
+                        new DeadLetterPublishingRecoverer(kafkaTemplate),
+                        new FixedBackOff(3000, 3)
+                );
+        errorHandler.addNotRetryableExceptions(NonRetryableException.class);
+        errorHandler.addRetryableExceptions(RetryableException.class);
 
         ConcurrentKafkaListenerContainerFactory<String, AccountDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
