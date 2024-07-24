@@ -12,7 +12,12 @@ public class OpenAccountTopicConsumer {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @KafkaListener(id = "open-account-listener", topics = "open-account-topic")
+    @KafkaListener
+            (
+                    id = "open-account-listener",
+                    topics = "open-account-topic",
+                    groupId = "open-account-listener"
+            )
     public void consume(AccountDTO accountDTO) {
         LOGGER.info("Received event from Open Account Topic: {}", accountDTO.toString());
     }

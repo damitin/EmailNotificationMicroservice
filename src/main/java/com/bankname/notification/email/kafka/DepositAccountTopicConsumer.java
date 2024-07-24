@@ -12,7 +12,12 @@ public class DepositAccountTopicConsumer {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @KafkaListener(id = "deposit-account-listener", topics = "deposit-account-topic")
+    @KafkaListener
+            (
+                    id = "deposit-account-listener",
+                    topics = "deposit-account-topic",
+                    groupId = "deposit-account-listener"
+            )
     public void consume(AccountDTO accountDTO) {
         LOGGER.info("Received event from Deposit Account Topic: {}", accountDTO.toString());
     }

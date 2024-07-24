@@ -12,7 +12,12 @@ public class CloseAccountTopicConsumer {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @KafkaListener(id = "close-account-listener", topics = "close-account-topic")
+    @KafkaListener
+            (
+                    id = "close-account-listener",
+                    topics = "close-account-topic",
+                    groupId = "close-account-listener"
+            )
     public void consume(AccountDTO accountDTO) {
         LOGGER.info("Received event from Close Account Topic: {}", accountDTO.toString());
     }
